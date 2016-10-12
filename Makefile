@@ -15,3 +15,7 @@ quickstart: virtualenv reqs
 
 shell:
 	${PYTHON} manage.py shell
+
+import: CSV_FILE ?= ~/transactions.csv
+import:
+	${PYTHON} manage.py import ${CSV_FILE}
