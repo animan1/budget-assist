@@ -14,4 +14,4 @@ pip:
 quickstart: virtualenv reqs
 
 shell:
-	${PYTHON} budget_assist/manage.py shell
+	${PYTHON} manage.py shell
