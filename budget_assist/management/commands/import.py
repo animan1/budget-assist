@@ -8,6 +8,13 @@ class Transaction(object):
     def __init__(self, data):
         self.data = data
 
+    @property
+    def label_list(self):
+        return self.data['Labels']
+
+    def has_label(self, label):
+        return label in self.label_list
+
     @classmethod
     def from_csv_row(cls, header, row):
         data = OrderedDict(zip(header, row))
@@ -26,4 +33,5 @@ class Command(BaseCommand):
             reader = csv.reader(transactions_file)
             header = reader.next()
             transactions = [Transaction.from_csv_row(header, row) for row in reader]
-        print transactions[0].data
+        # print '\n'.join([transaction.label_list for transaction in transactions])
+        print '\n'.join([str((transaction.has_label('Wrong account used'), transaction.label_list)) for transaction in transactions])
