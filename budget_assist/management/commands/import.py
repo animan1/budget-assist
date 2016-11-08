@@ -49,6 +49,10 @@ class Transaction(object):
     def type(self):
         return TransactionType.from_canonical(self.data['Transaction Type'])
 
+    @property
+    def description(self):
+        return self.data['Description']
+
     def has_label(self, label):
         return label in self.label_list
 
@@ -74,10 +78,10 @@ class Transaction(object):
         return Transaction(inverse_data)
 
     def transform(self):
-        transaction_list = []
         for label in self.label_list:
-            transaction_list.append([transaction for transaction in label.transform(self)])
-        return transaction_list
+            if label.transform:
+                return [transaction.transform() for transaction in label.transform(self)]
+        return [self]
 
     @classmethod
     def from_csv_row(cls, header, row):
@@ -97,4 +101,5 @@ class Command(BaseCommand):
             reader = csv.reader(transactions_file)
             header = reader.next()
             transactions = [Transaction.from_csv_row(header, row) for row in reader]
-        transaction = transactions[1]
+        for transaction in transactions:
+            print transaction.transform()
