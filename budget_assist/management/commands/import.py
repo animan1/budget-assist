@@ -10,16 +10,40 @@ class Transaction(object):
 
     def __init__(self, data):
         self.data = data
+        self._label_list = None
 
-    @cached_property
+    def __repr__(self):
+        return str(self.data)
+
+    @property
+    def labels(self):
+        return self.data['Labels']
+
+    @labels.setter
+    def labels(self, value):
+        self.data['Labels'] = value
+        self._label_list = None
+
+    @property
     def label_list(self):
-        labels_str = self.data['Labels']
-        label_list = []
+        if self._label_list is not None:
+            return self._label_list
+
+        labels_str = self.labels
+        self._label_list = []
         for label in Label.members():
             if label.canonical_name in labels_str:
                 labels_str = labels_str.replace(label.canonical_name, '')
-                label_list.append(label)
-        return label_list
+                self._label_list.append(label)
+        return self._label_list
+
+    @property
+    def category(self):
+        return self.data['Category']
+
+    @category.setter
+    def category(self, value):
+        self.data['Category'] = value
 
     @cached_property
     def type(self):
@@ -27,6 +51,18 @@ class Transaction(object):
 
     def has_label(self, label):
         return label in self.label_list
+
+    def set_label(self, label, value):
+        if self.has_label(label) == value:
+            return
+
+        label_str = self.labels
+        if value:
+            label_str += ' %s' % label
+        else:
+            label_str = label_str.replace(label.canonical_name, '').replace('  ', ' ').strip()
+
+        self.labels = label_str
 
     def copy(self):
         return Transaction(self.data.copy())
@@ -56,6 +92,3 @@ class Command(BaseCommand):
             header = reader.next()
             transactions = [Transaction.from_csv_row(header, row) for row in reader]
         transaction = transactions[1]
-        # print str((transaction.has_label(Label.WRONG_ACCOUNT), transaction.label_list))
-        print transaction.data
-        print transaction.inverse().data
