@@ -73,6 +73,12 @@ class Transaction(object):
         inverse_data['Transaction Type'] = inverse_type.canonical_name
         return Transaction(inverse_data)
 
+    def transform(self):
+        transaction_list = []
+        for label in self.label_list:
+            transaction_list.append([transaction for transaction in label.transform(self)])
+        return transaction_list
+
     @classmethod
     def from_csv_row(cls, header, row):
         data = OrderedDict(zip(header, row))
