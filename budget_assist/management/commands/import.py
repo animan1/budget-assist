@@ -79,8 +79,13 @@ class Transaction(object):
 
     def transform(self):
         for label in self.label_list:
-            if label.transform:
-                return [transaction.transform() for transaction in label.transform(self)]
+            if not label.transform:
+                continue
+
+            transaction_list = []
+            for transaction in label.transform(self):
+                transaction_list.extend(transaction.transform())
+            return transaction_list
         return [self]
 
     @classmethod
@@ -101,5 +106,12 @@ class Command(BaseCommand):
             reader = csv.reader(transactions_file)
             header = reader.next()
             transactions = [Transaction.from_csv_row(header, row) for row in reader]
+
+        transformed = []
         for transaction in transactions:
-            print transaction.transform()
+            transformed.extend(transaction.transform())
+        with open('%s.out' % filename, 'wb') as outfile:
+            writer = csv.writer(outfile, quoting=csv.QUOTE_ALL)
+            writer.writerow(header)
+            for transaction in transformed:
+                writer.writerow(transaction.data.values())
