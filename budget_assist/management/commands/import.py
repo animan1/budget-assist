@@ -28,6 +28,9 @@ class Transaction(object):
     def has_label(self, label):
         return label in self.label_list
 
+    def copy(self):
+        return Transaction(self.data.copy())
+
     def inverse(self):
         inverse_data = self.data.copy()
         inverse_type = self.type.inverse()
