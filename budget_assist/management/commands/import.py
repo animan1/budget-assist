@@ -1,6 +1,9 @@
 import csv
+from cached_property import cached_property
 from collections import OrderedDict
 from django.core.management.base import BaseCommand
+
+from budget_assist.constants import Label
 
 
 class Transaction(object):
@@ -8,9 +11,15 @@ class Transaction(object):
     def __init__(self, data):
         self.data = data
 
-    @property
+    @cached_property
     def label_list(self):
-        return self.data['Labels']
+        labels_str = self.data['Labels']
+        label_list = []
+        for label in Label.members():
+            if label.canonical_name in labels_str:
+                labels_str = labels_str.replace(label.canonical_name, '')
+                label_list.append(label)
+        return label_list
 
     def has_label(self, label):
         return label in self.label_list
@@ -33,5 +42,5 @@ class Command(BaseCommand):
             reader = csv.reader(transactions_file)
             header = reader.next()
             transactions = [Transaction.from_csv_row(header, row) for row in reader]
-        # print '\n'.join([transaction.label_list for transaction in transactions])
-        print '\n'.join([str((transaction.has_label('Wrong account used'), transaction.label_list)) for transaction in transactions])
+        transaction = transactions[1]
+        print str((transaction.has_label(Label.WRONG_ACCOUNT), transaction.label_list))
