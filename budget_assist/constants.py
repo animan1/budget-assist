@@ -10,9 +10,11 @@ def wrong_account_transform(transaction):
     inverse_transaction = transaction.inverse()
     copied_transaction = transaction.copy()
 
-    transaction.category = TRANSFER_TYPE
-
     should_be_joint = Label.JOINT_ACCOUNT not in transaction.label_list
+
+    transaction.category = TRANSFER_TYPE
+    transaction.labels = ''
+    transaction.set_label(Label.JOINT_ACCOUNT, not should_be_joint)
 
     if not should_be_joint:
         whose_transaction = None
@@ -28,8 +30,10 @@ def wrong_account_transform(transaction):
                 whose_transaction = None
 
     copied_transaction.set_label(Label.JOINT_ACCOUNT, should_be_joint)
-    inverse_transaction.set_label(Label.JOINT_ACCOUNT, should_be_joint)
+
     inverse_transaction.category = TRANSFER_TYPE
+    inverse_transaction.labels = ''
+    inverse_transaction.set_label(Label.JOINT_ACCOUNT, should_be_joint)
 
     return [transaction, inverse_transaction, copied_transaction]
 
