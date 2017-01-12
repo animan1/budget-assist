@@ -6,6 +6,9 @@ from django.core.management.base import BaseCommand
 from budget_assist.constants import Label, TransactionType
 
 
+SIGNED_HEADER_NAME = 'Signed'
+
+
 class Transaction(object):
 
     def __init__(self, data):
@@ -52,6 +55,19 @@ class Transaction(object):
     @property
     def description(self):
         return self.data['Description']
+
+    @property
+    def amount(self):
+        return float(self.data['Amount'])
+
+    def value_of_header(self, header):
+        if header in self.data:
+            return self.data[header]
+        if header == SIGNED_HEADER_NAME:
+            return self.type.multiplier * self.amount
+
+    def data_for_headers(self, headers):
+        return [self.value_of_header(h) for h in headers]
 
     def has_label(self, label):
         return label in self.label_list
@@ -112,8 +128,9 @@ class Command(BaseCommand):
             transformed.extend(transaction.transform())
 
         filename_no_extension = filename.rsplit('.csv')[0]
+        header = [SIGNED_HEADER_NAME] + header
         with open('%s-out.csv' % filename_no_extension, 'wb') as outfile:
             writer = csv.writer(outfile, quoting=csv.QUOTE_ALL)
             writer.writerow(header)
             for transaction in transformed:
-                writer.writerow(transaction.data.values())
+                writer.writerow(transaction.data_for_headers(header))

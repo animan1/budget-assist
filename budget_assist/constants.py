@@ -53,14 +53,15 @@ class Label(RichEnum):
 
 class TransactionTypeValue(RichEnumValue):
 
-    def __init__(self, inverse_canonical_name, *args):
+    def __init__(self, inverse_canonical_name, multiplier, *args):
         super(TransactionTypeValue, self).__init__(*args)
         self.inverse_canonical_name = inverse_canonical_name
+        self.multiplier = multiplier
 
     def inverse(self):
         return TransactionType.from_canonical(self.inverse_canonical_name)
 
 class TransactionType(RichEnum):
 
-    CREDIT = TransactionTypeValue('debit', 'credit', 'credit', '')
-    DEDIT = TransactionTypeValue('credit', 'debit', 'dedit', '')
+    CREDIT = TransactionTypeValue('debit', 1, 'credit', 'credit', '')
+    DEDIT = TransactionTypeValue('credit', -1, 'debit', 'dedit', '')
