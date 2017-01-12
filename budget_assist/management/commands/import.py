@@ -110,7 +110,9 @@ class Command(BaseCommand):
         transformed = []
         for transaction in transactions:
             transformed.extend(transaction.transform())
-        with open('%s.out' % filename, 'wb') as outfile:
+
+        filename_no_extension = filename.rsplit('.csv')[0]
+        with open('%s-out.csv' % filename_no_extension, 'wb') as outfile:
             writer = csv.writer(outfile, quoting=csv.QUOTE_ALL)
             writer.writerow(header)
             for transaction in transformed:
