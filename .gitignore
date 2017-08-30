@@ -2,3 +2,4 @@
 .virtualenv
 *.un~
 *.pyc
+geckodriver.log
