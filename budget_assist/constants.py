@@ -23,7 +23,7 @@ def wrong_account_transform(transaction):
                     'Whose transaction is %s: "%s"? (p)ersonal / (e)xternal '
                     % (copied_transaction.category, transaction.description)
             )
-            whose_transaction = raw_input(prompt)
+            whose_transaction = input(prompt)
             if whose_transaction == 'e':
                 return [transaction]
             elif whose_transaction != 'p':

@@ -114,22 +114,32 @@ class Command(BaseCommand):
     help = 'Import a transactions CSV from Mint'
 
     def add_arguments(self, parser):
-        parser.add_argument('transactions_filename', type=str)
+        parser.add_argument('gcash', type=str)
+        parser.add_argument('tsx', type=str)
 
     def handle(self, *args, **options):
-        filename = options['transactions_filename']
+        gcash_filename = options['gcash']
+        tsx_filename = options['tsx']
+
+        gcash_transactions = self.handle_gcash_file(gcash_filename)
+        self.output(gcash_transactions, out_filename)
+
+    def handle_tsx_file(self, filename):
         with open(filename) as transactions_file:
             reader = csv.reader(transactions_file)
-            header = reader.next()
+            header = next(reader)
             transactions = [Transaction.from_csv_row(header, row) for row in reader]
 
         transformed = []
         for transaction in transactions:
             transformed.extend(transaction.transform())
+        return transformed
 
+    def output(self, transformed, filename):
+        header = list(transformed[0].data.keys()
         filename_no_extension = filename.rsplit('.csv')[0]
         header = [SIGNED_HEADER_NAME] + header
-        with open('%s-out.csv' % filename_no_extension, 'wb') as outfile:
+        with open('%s-out.csv' % filename_no_extension, 'w') as outfile:
             writer = csv.writer(outfile, quoting=csv.QUOTE_ALL)
             writer.writerow(header)
             for transaction in transformed:

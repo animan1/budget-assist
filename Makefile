@@ -16,6 +16,7 @@ quickstart: virtualenv reqs
 shell:
 	${PYTHON} manage.py shell
 
-import: CSV_FILE ?= ~/Downloads/transactions.csv
+import: TSX_FILE ?= ~/Downloads/transactions.csv
+import: GCASH_FILE ?= ~/gnu-cash-out.csv
 import:
-	${PYTHON} manage.py import ${CSV_FILE}
+	${PYTHON} manage.py import ${GCASH_FILE} ${TSX_FILE}
