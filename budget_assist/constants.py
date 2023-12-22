@@ -3,39 +3,45 @@ from richenum import RichEnum, RichEnumValue
 
 TRANSFER_TYPE = 'Transfer'
 
+def _is_external(transaction) -> str:
+    while True:
+        prompt = (
+                'Whose transaction is %s: "%s"? (p)ersonal / (e)xternal '
+                % (transaction.category, transaction.description)
+        )
+        whose_transaction = input(prompt)
+        if whose_transaction == 'e':
+            return True
+        elif whose_transaction != 'p':
+            print(f'Invalid choice: {whose_transaction}')
+        else:
+            return False
+
 def wrong_account_transform(transaction):
-    transaction = transaction.copy()
-    transaction.set_label(Label.WRONG_ACCOUNT, False)
+    new_labels = set(transaction.labels)
+    new_labels.remove(Label.WRONG_ACCOUNT)
 
-    inverse_transaction = transaction.inverse()
-    copied_transaction = transaction.copy()
+    # inverse_transaction = transaction.inverse()
+    # copied_transaction = transaction.copy()
 
-    should_be_joint = Label.JOINT_ACCOUNT not in transaction.label_list
+    should_be_joint = Label.JOINT_ACCOUNT not in transaction.labels
 
-    transaction.category = TRANSFER_TYPE
-    transaction.labels = ''
-    transaction.set_label(Label.JOINT_ACCOUNT, not should_be_joint)
+    transformed_transaction = transaction.copy(
+        labels=set(),
+        category=TRANSFER_TYPE
+    ).set_label(Label.JOINT_ACCOUNT, not should_be_joint)
 
-    if not should_be_joint:
-        whose_transaction = None
-        while whose_transaction is None:
-            prompt = (
-                    'Whose transaction is %s: "%s"? (p)ersonal / (e)xternal '
-                    % (copied_transaction.category, transaction.description)
-            )
-            whose_transaction = raw_input(prompt)
-            if whose_transaction == 'e':
-                return [transaction]
-            elif whose_transaction != 'p':
-                whose_transaction = None
+    if not should_be_joint and _is_external(transaction):
+        return [transformed_transaction]
 
-    copied_transaction.set_label(Label.JOINT_ACCOUNT, should_be_joint)
+    copied_transaction = transaction.set_label(Label.JOINT_ACCOUNT, should_be_joint).set_label(Label.WRONG_ACCOUNT, False)
 
-    inverse_transaction.category = TRANSFER_TYPE
-    inverse_transaction.labels = ''
-    inverse_transaction.set_label(Label.JOINT_ACCOUNT, should_be_joint)
+    inverse_transaction = transaction.copy(
+        category = TRANSFER_TYPE,
+        labels = set(),
+    ).inverse().set_label(Label.JOINT_ACCOUNT, should_be_joint)
 
-    return [transaction, inverse_transaction, copied_transaction]
+    return [transformed_transaction, inverse_transaction, copied_transaction]
 
 class LabelValue(RichEnumValue):
 
@@ -50,6 +56,8 @@ class Label(RichEnum):
 
     WRONG_ACCOUNT = LabelValue('Wrong account used', 'Wrong Account Used', '', transform=wrong_account_transform)
     JOINT_ACCOUNT = LabelValue('Joint Account', 'Joint Account', '')
+    MISC_SPENDING = LabelValue('Misc Spending', 'Misc Spending', '')
+    REIMBURSABLE = LabelValue('Reimbursable', 'Reimbursable', '')
 
 class TransactionTypeValue(RichEnumValue):
 
